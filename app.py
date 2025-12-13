@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 IMAGE_PATH = "img/مشروم.png"
 MODEL_PATH = "mushroom_model.pkl"
 ENCODERS_PATH = "label_encoders.pkl"
-DATA_PATH = "mushroom.csv"  # REQUIRED for SHAP background data
+DATA_PATH = "mushroom.csv"  
 
 
 # ===========================
@@ -44,24 +44,24 @@ if 'model_loaded' not in st.session_state:
     st.session_state['model_loaded'] = False
 
 try:
-    # Load core components
+    
     model = joblib.load(MODEL_PATH)
     label_encoders = joblib.load(ENCODERS_PATH)
 
-    # List of all features the model expects (for validation later)
+    
     ALL_MODEL_FEATURES = list(label_encoders.keys())
 
-    # List of features for UI input
+    
     features = list(label_encoders.keys())
     if 'class' in features:
         features.remove('class')
     if 'veil-type' in features:
-        features.remove('veil-type')  # Typically a constant value
+        features.remove('veil-type')  
 
     # --- SHAP Setup (Crucial for performance, runs once) ---
     try:
         df_full = pd.read_csv(DATA_PATH)
-        # Use a small background sample for faster SHAP calculation if TreeExplainer is not used
+       
         df_sample = df_full.drop("class", axis=1).iloc[:100]
 
         
@@ -123,7 +123,7 @@ MUSHROOM_MAPPING = {
     "cap-surface": ["fibrous (f)", "grooves (g)", "scaly (y)", "smooth (s)"],
     "cap-color": ["brown (n)", "buff (b)", "cinnamon (c)", "gray (g)", "green (r)", "pink (p)",
                   "purple (u)", "red (e)", "white (w)", "yellow (y)"],
-    "bruises": ["yes (t)", "no (f)"],
+    "ruises": ["yes (t)", "no (f)"],
     "odor": ["almond (a)", "anise (l)", "creosote (c)", "fishy (y)", "foul (f)", "musty (m)",
              "none (n)", "pungent (p)", "spicy (s)"],
     "gill-attachment": ["attached (a)", "free (f)"],
@@ -338,13 +338,11 @@ def classifier_page():
             # 2. PREPARE DATAFRAME FOR MODEL
             input_df = pd.DataFrame([encoded])
 
-            # Ensure column order matches the model's training data
+            
             all_model_features_for_df = [c for c in ALL_MODEL_FEATURES if c != 'class']
             input_df = input_df[all_model_features_for_df]
 
-            # =========================================================
-            # 🛑 التعديل الرئيسي لحل مشكلة 'int' and 'str'
-            # ---------------------------------------------------------
+            
             for col in input_df.columns:
                
                 input_df[col] = pd.to_numeric(input_df[col], errors='coerce').fillna(0).astype(int)
@@ -366,27 +364,27 @@ def classifier_page():
             # --- Calculate SHAP Values ---
             with st.spinner("Calculating Feature Contributions (SHAP)..."):
                 if st.session_state['explainer_type'] == 'tree':
-                    # TreeExplainer expects features in correct order and type
+                    
                     shap_values = explainer.shap_values(input_df)
                     if isinstance(shap_values, list):
                         shap_sample_values = shap_values[prediction][0]
                     else:
                         shap_sample_values = shap_values[0]
-                else:  # General Explainer
+                else:  
                     shap_values = explainer(input_df)
                     shap_sample_values = shap_values.values[0]
 
-                # Convert SHAP Values to Percentages based on absolute contribution
+              
                 vals = np.abs(shap_sample_values)
                 feature_names = input_df.columns
 
-                # Check for zero sum case to prevent division by zero
+                
                 if vals.sum() == 0:
                     percentages = np.zeros_like(vals)
                 else:
                     percentages = 100 * vals / vals.sum()
 
-                # Create the final percentage DataFrame
+                
                 percentage_data = {
                     'Feature': feature_names,
                     'Contribution %': [round(p, 2) for p in percentages]
@@ -402,7 +400,7 @@ def classifier_page():
             st.rerun()
 
         except Exception as e:
-            # Use st.exception for better error display in Streamlit GUI
+            
             st.error("An unexpected error occurred during prediction/encoding. Details:")
             st.exception(e)
 
@@ -411,19 +409,19 @@ def classifier_page():
 #     EXPLANATION PAGE (Page 3)
 # ===========================
 def explanation_page():
-    # Retrieve results from Session State
+    
     pred = st.session_state.get('prediction_result', 'N/A')
     confidence = st.session_state.get('prediction_confidence', 'N/A')
     percentage_df = st.session_state.get('shap_percentages', None)
 
-    # Back button to return to input screen
+    
     if st.button("⬅ Back to Input", key="back_from_expl"):
         st.session_state['page'] = 'classifier'
         st.rerun()
 
     st.markdown("---")
 
-    # --- Result Header ---
+    
     pred_label = 'Edible (e)' if pred == 0 else 'Poisonous (p)'
 
     if pred == 0:
@@ -438,7 +436,7 @@ def explanation_page():
 
     if percentage_df is not None and not percentage_df.empty:
 
-        # Filter out features with 0% contribution for clarity
+        
         display_df = percentage_df[percentage_df['Contribution %'] > 0.0].head(10)
 
         st.dataframe(
@@ -449,7 +447,7 @@ def explanation_page():
                     "Contribution %",
                     format="%.2f %%",
                     min_value=0,
-                    # Max is calculated based on current display values for better visual
+                    
                     max_value=display_df['Contribution %'].max() if not display_df.empty else 100
                 ),
             },
