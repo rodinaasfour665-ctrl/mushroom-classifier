@@ -431,7 +431,7 @@ def explanation_page():
 
     st.markdown("---")
 
-    st.header(f"🔬 Why was the prediction {pred_label}?")
+    st.header(f" Why was the prediction {pred_label}?")
     st.markdown("The table below shows the features that contributed the most to this specific prediction.")
 
     if percentage_df is not None and not percentage_df.empty:
