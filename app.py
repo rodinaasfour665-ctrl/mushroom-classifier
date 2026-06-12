@@ -67,7 +67,9 @@ try:
         
         for col in df_sample.columns:
             df_sample[col] = pd.to_numeric(
-                df_sample[col].astype(str).apply(lambda x: ord(x) if len(x) == 1 else x),
+                df_sample[col].astype(str).str[0].apply(
+                    lambda x: ord(x) if pd.notna(x) and len(str(x)) > 0 else 0
+                ),
                 errors='coerce'
             ).fillna(0).astype(int)
 
