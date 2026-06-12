@@ -39,4 +39,4 @@ python app.py
 ### 3. Use the GUI
 
 The graphical interface will open and allow the user to select mushroom features and predict whether it is edible or poisonous.
-https://mushroom-classifier-z9c92xzsg93bzxajwc6qfq.streamlit.app
+https://mushroom-classifier-smcnv6pbzupxsh8zwypxdw.streamlit.app/
